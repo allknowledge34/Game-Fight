@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Sansad Showdown — Political Satire Fighter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Teko:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="/assets/index-CCHC4xpt.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/three-CbaolE55.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-BSYX1smP.css">
+  </head>
+  <body>
+    <canvas id="game" aria-label="3D Arena Canvas"></canvas>
+    <div id="vignette" aria-hidden="true"></div>
+    <div id="flash" aria-hidden="true"></div>
+    <div id="popups" aria-hidden="true"></div>
+
+    <!-- Combat HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-top">
+        <div class="fighter-hud left">
+          <div class="port-wrap"><img id="p1-port" alt="Player 1 portrait" /></div>
+          <div class="bar-col">
+            <div id="p1-name" class="name-line">MITRAMAN (YOU)</div>
+            <div class="hp-track"><div id="p1-hp" class="hp-fill"></div></div>
+            <div id="p1-rounds" class="rounds" aria-label="Player 1 round wins">
+              <span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-center">
+          <div id="timer" aria-live="off">60</div>
+          <button id="pause-btn" type="button" aria-label="Pause game">II</button>
+        </div>
+
+        <div class="fighter-hud right">
+          <div class="bar-col">
+            <div id="p2-name" class="name-line">YATRA BOY (CPU)</div>
+            <div class="hp-track"><div id="p2-hp" class="hp-fill"></div></div>
+            <div id="p2-rounds" class="rounds" aria-label="Player 2 round wins">
+              <span></span><span></span>
+            </div>
+          </div>
+          <div class="port-wrap"><img id="p2-port" alt="Player 2 portrait" /></div>
+        </div>
+      </div>
+
+      <div class="hud-bottom">
+        <div class="shakti-box left">
+          <span class="shakti-label">SHAKTI</span>
+          <div class="shakti-track"><div id="p1-meter" class="shakti-fill"></div></div>
+        </div>
+
+        <div id="newsdesk" aria-live="polite">
+          <div class="live-badge"><i aria-hidden="true"></i>LIVE</div>
+          <div class="anchor godi">
+            <img alt="Shor Sharma anchor" />
+            <div class="meta">
+              <div class="channel">BREAKING BAKWAS</div>
+              <div class="who">SHOR SHARMA</div>
+              <div class="line">Round 1! Ready!</div>
+            </div>
+          </div>
+          <div class="vs-sep" aria-hidden="true">VS</div>
+          <div class="anchor troll">
+            <img alt="Tweety Trollwala anchor" />
+            <div class="meta">
+              <div class="channel">TROLL ARMY</div>
+              <div class="who">TWEETY TROLLWALA</div>
+              <div class="line">Chat, are we live?</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="shakti-box right">
+          <span class="shakti-label">SHAKTI</span>
+          <div class="shakti-track"><div id="p2-meter" class="shakti-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="ticker-bar">
+        <span class="tag">BREAKING</span>
+        <div class="ticker-viewport"><div class="ticker-track"></div></div>
+      </div>
+    </div>
+
+    <div id="announce" role="status" aria-live="polite"></div>
+
+    <button id="budget-meter" type="button" aria-label="Trigger Nirmala Budget Assist">
+      <span class="hint"><kbd>B</kbd> BUDGET ASSIST</span>
+      <span class="label">BUDGET</span>
+      <div class="track"><i></i></div>
+      <span class="key">B</span>
+    </button>
+
+    <div id="super-banner" aria-live="assertive"></div>
+
+    <!-- Mobile Landscape Touch Controls -->
+    <div id="touch" class="hidden" aria-label="Touch Controls">
+      <div class="stick" role="application" aria-label="Movement joystick">
+        <div class="stick-knob"></div>
+      </div>
+      <div class="touch-actions">
+        <button class="touch-btn punch" data-btn="punch" type="button">J<small>PUNCH</small></button>
+        <button class="touch-btn kick" data-btn="kick" type="button">K<small>KICK</small></button>
+        <button class="touch-btn grab" data-btn="grab" type="button">I<small>GRAB</small></button>
+        <button class="touch-btn super" data-btn="super" type="button">L<small>SUPER</small></button>
+        <button id="touch-budget" class="touch-budget" type="button" hidden>📕<small>BUDGET</small></button>
+      </div>
+    </div>
+
+    <div id="rotate" class="hidden" role="alert">
+      <div>Rotate your phone to landscape to fight</div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading" class="screen">
+      <div class="logo">SANSAD <span>SHOWDOWN</span></div>
+      <p>Preparing 3D arena &amp; neta rigs…</p>
+      <div class="load-bar"><i id="load-fill"></i></div>
+    </div>
+
+    <!-- Title Screen -->
+    <main id="title" class="screen hidden">
+      <h1 class="logo">SANSAD <span>SHOWDOWN</span></h1>
+      <div class="tag">THE GREAT KURSI FIGHT · 🪔 DIWALI SPECIAL</div>
+      <button id="title-start-btn" class="big" type="button">ENTER THE ARENA</button>
+      <div class="press">PRESS ENTER / CLICK TO START</div>
+      <div class="disclaimer">Political satire and parody. Not connected to or endorsed by any person or party.</div>
+    </main>
+
+    <!-- Select Screen -->
+    <section id="select" class="screen hidden" aria-label="Fighter Selection">
+      <div class="sel-header">
+        <h2>SELECT YOUR NETA</h2>
+        <div class="controls-strip">
+          Pick tap a face (1P, then CPU) · ←/→ you · ↑/↓ CPU · Stage <kbd>T</kbd> · CPU <kbd>1/2/3</kbd> · Fight <kbd>Enter</kbd><br />
+          Move <kbd>A/D</kbd> or <kbd>←/→</kbd> · Jump <kbd>W</kbd> · Crouch <kbd>S</kbd> · Block hold back · Punch <kbd>J</kbd> · Kick <kbd>K</kbd> · Grab <kbd>I</kbd> · Super <kbd>L/Space</kbd> · Pause <kbd>Esc</kbd>
+        </div>
+      </div>
+
+      <div class="vs-badge" aria-hidden="true">VS</div>
+
+      <div class="sel-footer">
+        <div class="pick-prompt">PICK YOUR NETA</div>
+        <div id="roster-grid" class="grid" role="list"></div>
+
+        <div class="sel-bottom">
+          <div id="card-p1" class="fighter-card p1">
+            <div class="card-role">1P · YOU</div>
+            <h3 class="card-name">MITRAMAN</h3>
+            <div class="card-party">Team Vaada</div>
+            <div class="card-super">SUPER · MITRA CHAKRA</div>
+            <p class="card-desc"></p>
+          </div>
+
+          <div class="sel-center-controls">
+            <div class="options">
+              <div class="difficulty stage-pick">
+                <span>STAGE</span>
+                <button type="button" data-stage="sansad" class="active">SANSAD</button>
+                <button type="button" data-stage="jantar">JANTAR MANTAR</button>
+                <button type="button" data-stage="road">DESI SADAK</button>
+              </div>
+              <div class="difficulty cpu-level">
+                <span>CPU</span>
+                <button type="button" data-diff="easy">EASY</button>
+                <button type="button" data-diff="normal" class="active">NORMAL</button>
+                <button type="button" data-diff="hard">HARD</button>
+              </div>
+            </div>
+            <div class="sel-actions">
+              <button id="online-btn" class="online-btn" type="button">PLAY WITH A FRIEND</button>
+              <button id="fight-btn" class="big" type="button">FIGHT!</button>
+            </div>
+            <div id="online-bar" class="online-bar hidden">
+              <span id="online-status"></span>
+              <button id="online-leave" type="button">LEAVE ROOM</button>
+            </div>
+          </div>
+
+          <div id="card-p2" class="fighter-card p2">
+            <div class="card-role">CPU</div>
+            <h3 class="card-name">YATRA BOY</h3>
+            <div class="card-party">Team Yatra</div>
+            <div class="card-super">SUPER · ALOO SE SONA</div>
+            <p class="card-desc"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Friend Multiplayer Modal -->
+    <div id="online" class="screen hidden" role="dialog" aria-modal="true" aria-labelledby="online-heading">
+      <div class="modal-card">
+        <h2 id="online-heading">PLAY WITH A FRIEND</h2>
+        <div id="on-home" class="on-panel">
+          <button id="on-host" class="big" type="button">HOST A ROOM</button>
+          <div class="on-or">or enter your friend's 4-letter room code</div>
+          <form id="on-join-form" class="on-join">
+            <label for="on-code" class="visually-hidden">Room code</label>
+            <input
+              id="on-code"
+              maxlength="4"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              placeholder="CODE"
+            />
+            <button id="on-join-btn" class="big" type="submit">JOIN</button>
+          </form>
+        </div>
+
+        <div id="on-hosting" class="on-panel hidden">
+          <div class="on-label">SHARE THIS ROOM CODE WITH YOUR FRIEND:</div>
+          <div id="on-room-code" class="on-code">····</div>
+          <div class="on-wait"><span class="dot"></span> Waiting for friend to join…</div>
+          <button id="on-copy" type="button">Copy Invite Link</button>
+        </div>
+
+        <div id="on-error" class="on-panel hidden">
+          <p id="on-error-text" class="error-msg"></p>
+          <button id="on-retry" type="button">Try Again</button>
+        </div>
+
+        <button id="on-back" class="on-back" type="button">BACK</button>
+      </div>
+    </div>
+
+    <!-- Disconnect / Away Banner -->
+    <div id="net-away" class="hidden" role="alert">
+      <div class="away-box">
+        <p id="net-away-msg">Connection issue with your friend…</p>
+        <button id="net-away-leave" type="button">LEAVE ROOM</button>
+      </div>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="pause" class="screen hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <div class="modal-card">
+        <h2 id="pause-title" class="chai-title">CHAI BREAK ☕</h2>
+        <p class="sub">Sansad adjourned till further notice.</p>
+        <div class="stack">
+          <button id="resume-btn" class="big" type="button">RESUME</button>
+          <button id="pause-sound-btn" type="button">SOUND: ON</button>
+          <button id="quit-btn" type="button">QUIT TO SELECT</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Newspaper Result Screen -->
+    <div id="result" class="screen hidden">
+      <div class="newspaper">
+        <div id="paper-masthead" class="masthead">THE DAILY JUMLA</div>
+        <div id="paper-date" class="dateline">NEW DELHI · SPECIAL EDITION</div>
+        <h2 id="paper-headline" class="headline">MITRAMAN SWEEPS SANSAD!</h2>
+        <div class="paper-body">
+          <figure>
+            <img id="paper-photo" alt="Match moment snapshot" />
+            <figcaption id="paper-caption"></figcaption>
+          </figure>
+          <div class="paper-copy">
+            <p id="paper-sub" class="paper-sub"></p>
+            <p id="paper-excuse" class="excuse"></p>
+          </div>
+        </div>
+        <div id="result-title" class="stamp">YOU WIN!</div>
+      </div>
+      <div id="bapu-stats" class="bapu-banner hidden"></div>
+      <div class="result-actions">
+        <button id="rematch-btn" class="big" type="button">REMATCH</button>
+        <button id="select-btn" type="button">CHARACTER SELECT</button>
+      </div>
+    </div>
+
+    <!-- Persistent Mute Toggle -->
+    <button id="sound-btn" type="button" aria-label="Toggle sound">🔊</button>
+
+    <!-- Satire Notice Modal -->
+    <div id="legal" role="alertdialog" aria-modal="true" aria-labelledby="legal-title">
+      <div class="legal-box">
+        <h2 id="legal-title">SATIRE NOTICE · व्यंग्य सूचना</h2>
+        <div class="legal-scroll" tabindex="0">
+          <p>
+            <strong>SANSAD SHOWDOWN</strong> is a political satire and parody browser game created purely for
+            entertainment, humour, and social commentary.
+          </p>
+          <ul>
+            <li>All characters, voices, headlines, and super moves are fictional satirical caricatures.</li>
+            <li>This independent project is not affiliated with or endorsed by any political party or individual.</li>
+            <li>Cartoon combat is exaggerated; please do not imitate anything depicted here in real life.</li>
+          </ul>
+          <hr />
+          <p lang="hi">
+            यह खेल मनोरंजन और सामाजिक टिप्पणी के उद्देश्य से बनाया गया एक राजनीतिक व्यंग्य एवं पैरोडी है। सभी पात्र
+            एवं संवाद काल्पनिक हैं।
+          </p>
+        </div>
+        <button id="legal-ok" class="big" type="button">I UNDERSTAND · CONTINUE</button>
+      </div>
+    </div>
+
+  </body>
+</html>
