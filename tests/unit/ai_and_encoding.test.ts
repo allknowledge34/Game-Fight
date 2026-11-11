@@ -18,8 +18,8 @@ describe('Binary Input Packing & CPU AI', () => {
 
   it('CPU AI approaches distant foes, jumps cow hazards, and activates super when meter full', () => {
     const aiCtrl = new CpuAi('hard', 123);
-    const ai = new FighterController(1, 'rahul');
-    const opp = new FighterController(0, 'modi');
+    const ai = new FighterController(1, 'wukong');
+    const opp = new FighterController(0, 'kratos');
     ai.resetForRound();
     opp.resetForRound();
     opp.x = -3;

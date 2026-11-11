@@ -67,13 +67,13 @@ export class HudController {
 
     this.p1Name.textContent = modeTag === 'GUEST' ? `${f1.name} (HOST)` : `${f1.name} (YOU)`;
     this.p2Name.textContent = modeTag === 'GUEST' ? `${f2.name} (YOU)` : `${f2.name} (${modeTag})`;
-    this.p1Port.src = this.portraits.getFighterPortrait(p1);
-    this.p2Port.src = this.portraits.getFighterPortrait(p2);
+    this.portraits.bindPortraitImage(this.p1Port, p1);
+    this.portraits.bindPortraitImage(this.p2Port, p2);
     this.p1Port.style.borderColor = f1.accent;
     this.p2Port.style.borderColor = f2.accent;
 
-    this.godiLine.textContent = `Round 1! ${f1.fullName} ji is READY!`;
-    this.trollLine.textContent = `Round 1! ${f2.fullName} warming up!`;
+    this.godiLine.textContent = `Round 1! ${f1.fullName} is READY!`;
+    this.trollLine.textContent = `Round 1! ${f2.fullName} locked in!`;
     this.tickerTrack.replaceChildren();
     this.tickerX = window.innerWidth * 0.7;
     this.pushTicker(FILLER_TICKER[0], true);

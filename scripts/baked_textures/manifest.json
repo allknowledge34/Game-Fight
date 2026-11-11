@@ -1,0 +1,297 @@
+{
+  "kratos_head_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_head_albedo.ztex"
+  },
+  "kratos_head_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_head_normal.ztex"
+  },
+  "kratos_beard_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_beard_albedo.ztex"
+  },
+  "kratos_beard_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_beard_normal.ztex"
+  },
+  "kratos_body_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_body_albedo.ztex"
+  },
+  "kratos_body_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_body_normal.ztex"
+  },
+  "kratos_armor_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_armor_albedo.ztex"
+  },
+  "kratos_armor_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_armor_normal.ztex"
+  },
+  "kratos_armor_orm": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_armor_orm.ztex"
+  },
+  "kratos_fur_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_fur_albedo.ztex"
+  },
+  "kratos_fur_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "kratos_fur_normal.ztex"
+  },
+  "wukong_head_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "wukong_head_albedo.ztex"
+  },
+  "wukong_head_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "wukong_head_normal.ztex"
+  },
+  "wukong_armor_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "wukong_armor_albedo.ztex"
+  },
+  "wukong_armor_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "wukong_armor_normal.ztex"
+  },
+  "wukong_armor_orm": {
+    "width": 256,
+    "height": 256,
+    "file": "wukong_armor_orm.ztex"
+  },
+  "wukong_feather_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "wukong_feather_albedo.ztex"
+  },
+  "wukong_hair_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "wukong_hair_albedo.ztex"
+  },
+  "wukong_hair_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "wukong_hair_normal.ztex"
+  },
+  "michael_head_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "michael_head_albedo.ztex"
+  },
+  "michael_head_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "michael_head_normal.ztex"
+  },
+  "michael_hair_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "michael_hair_albedo.ztex"
+  },
+  "michael_hair_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "michael_hair_normal.ztex"
+  },
+  "michael_suit_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "michael_suit_albedo.ztex"
+  },
+  "michael_suit_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "michael_suit_normal.ztex"
+  },
+  "michael_suit_orm": {
+    "width": 256,
+    "height": 256,
+    "file": "michael_suit_orm.ztex"
+  },
+  "michael_shirt_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "michael_shirt_albedo.ztex"
+  },
+  "michael_tie_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "michael_tie_albedo.ztex"
+  },
+  "spiderman_head_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "spiderman_head_albedo.ztex"
+  },
+  "spiderman_head_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "spiderman_head_normal.ztex"
+  },
+  "spiderman_body_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "spiderman_body_albedo.ztex"
+  },
+  "spiderman_body_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "spiderman_body_normal.ztex"
+  },
+  "spiderman_body_orm": {
+    "width": 256,
+    "height": 256,
+    "file": "spiderman_body_orm.ztex"
+  },
+  "spiderman_limb_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "spiderman_limb_albedo.ztex"
+  },
+  "spiderman_limb_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "spiderman_limb_normal.ztex"
+  },
+  "ironman_armor_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "ironman_armor_albedo.ztex"
+  },
+  "ironman_armor_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "ironman_armor_normal.ztex"
+  },
+  "ironman_armor_orm": {
+    "width": 256,
+    "height": 256,
+    "file": "ironman_armor_orm.ztex"
+  },
+  "ironman_head_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "ironman_head_albedo.ztex"
+  },
+  "ironman_head_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "ironman_head_normal.ztex"
+  },
+  "thor_head_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "thor_head_albedo.ztex"
+  },
+  "thor_head_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "thor_head_normal.ztex"
+  },
+  "thor_armor_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "thor_armor_albedo.ztex"
+  },
+  "thor_armor_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "thor_armor_normal.ztex"
+  },
+  "thor_armor_orm": {
+    "width": 256,
+    "height": 256,
+    "file": "thor_armor_orm.ztex"
+  },
+  "thor_chain_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "thor_chain_albedo.ztex"
+  },
+  "thor_chain_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "thor_chain_normal.ztex"
+  },
+  "thor_chain_orm": {
+    "width": 256,
+    "height": 256,
+    "file": "thor_chain_orm.ztex"
+  },
+  "thor_hair_albedo": {
+    "width": 256,
+    "height": 256,
+    "file": "thor_hair_albedo.ztex"
+  },
+  "thor_hair_normal": {
+    "width": 256,
+    "height": 256,
+    "file": "thor_hair_normal.ztex"
+  },
+  "steve_face_albedo": {
+    "width": 128,
+    "height": 128,
+    "file": "steve_face_albedo.ztex"
+  },
+  "steve_face_normal": {
+    "width": 128,
+    "height": 128,
+    "file": "steve_face_normal.ztex"
+  },
+  "steve_shirt_albedo": {
+    "width": 128,
+    "height": 128,
+    "file": "steve_shirt_albedo.ztex"
+  },
+  "steve_shirt_normal": {
+    "width": 128,
+    "height": 128,
+    "file": "steve_shirt_normal.ztex"
+  },
+  "steve_bossarmor_albedo": {
+    "width": 128,
+    "height": 128,
+    "file": "steve_bossarmor_albedo.ztex"
+  },
+  "steve_bossarmor_normal": {
+    "width": 128,
+    "height": 128,
+    "file": "steve_bossarmor_normal.ztex"
+  },
+  "steve_bossarmor_emissive": {
+    "width": 128,
+    "height": 128,
+    "file": "steve_bossarmor_emissive.ztex"
+  },
+  "steve_tnt_albedo": {
+    "width": 128,
+    "height": 128,
+    "file": "steve_tnt_albedo.ztex"
+  },
+  "steve_diamond_albedo": {
+    "width": 64,
+    "height": 64,
+    "file": "steve_diamond_albedo.ztex"
+  }
+}

@@ -74,7 +74,7 @@ export function solveFighterPose(f: FighterSnapshot, clock: number): FighterPose
   switch (f.state) {
     case 'intro': {
       const wave = Math.sin(t * 5);
-      if (f.id === 'ravi') {
+      if (f.id === 'wukong') {
         return blendPose(st, {
           rootY: Math.abs(Math.sin(t * 6)) * 0.05,
           hipsT: wave * 0.28,
@@ -85,16 +85,26 @@ export function solveFighterPose(f: FighterSnapshot, clock: number): FighterPose
           rEl: 1.1,
         }, 1);
       }
-      if (f.id === 'modi') {
+      if (f.id === 'kratos' || f.id === 'thor') {
         return blendPose(st, {
           rootY: breath * 0.015,
-          lShF: 1.05 + wave * 0.08,
-          lShO: 0.65,
-          lEl: 0.4,
-          rShF: 1.05 - wave * 0.08,
-          rShO: 0.65,
-          rEl: 0.4,
+          lShF: 0.95 + wave * 0.08,
+          lShO: 0.55,
+          lEl: 0.65,
+          rShF: 1.15 - wave * 0.08,
+          rShO: 0.55,
+          rEl: 0.55,
           headF: -0.06,
+        }, 1);
+      }
+      if (f.id === 'steve') {
+        return blendPose(st, {
+          rootY: Math.abs(Math.sin(t * 4)) * 0.03,
+          rShF: 1.2 + Math.sin(t * 3) * 0.15,
+          rEl: 0.45,
+          lShF: 0.85,
+          lEl: 0.5,
+          spineT: Math.sin(t * 2) * 0.1,
         }, 1);
       }
       return blendPose(st, {

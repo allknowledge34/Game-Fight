@@ -20,8 +20,8 @@ function stepUntilActive(attacker: FighterController, defender: FighterControlle
 
 describe('Combat resolution, combos, blocks, counters, and grabs', () => {
   it('connects standing jab, deals base damage, and builds SHAKTI meter', () => {
-    const p1 = new FighterController(0, 'modi');
-    const p2 = new FighterController(1, 'rahul');
+    const p1 = new FighterController(0, 'kratos');
+    const p2 = new FighterController(1, 'wukong');
     p1.resetForRound();
     p2.resetForRound();
     p1.x = -0.35;
@@ -33,15 +33,15 @@ describe('Combat resolution, combos, blocks, counters, and grabs', () => {
     const res = stepUntilActive(p1, p2);
     expect(res).not.toBeNull();
     expect(res!.blocked).toBe(false);
-    expect(res!.damage).toBe(BASE_MOVES.jab.damage);
-    expect(p2.hp).toBe(100 - BASE_MOVES.jab.damage);
+    expect(res!.damage).toBe(Math.round(BASE_MOVES.jab.damage * 1.08));
+    expect(p2.hp).toBe(100 - Math.round(BASE_MOVES.jab.damage * 1.08));
     expect(p1.meter).toBeGreaterThan(5);
     expect(p2.meter).toBeGreaterThan(2);
   });
 
   it('guards high/mid attacks when holding back and applies non-lethal chip damage', () => {
-    const p1 = new FighterController(0, 'modi');
-    const p2 = new FighterController(1, 'rahul');
+    const p1 = new FighterController(0, 'michael');
+    const p2 = new FighterController(1, 'thor');
     p1.resetForRound();
     p2.resetForRound();
     p1.x = -0.35;
@@ -67,8 +67,8 @@ describe('Combat resolution, combos, blocks, counters, and grabs', () => {
   });
 
   it('allows low sweep to open standing guard and misses high attacks against crouching foes', () => {
-    const p1 = new FighterController(0, 'rahul');
-    const p2 = new FighterController(1, 'modi');
+    const p1 = new FighterController(0, 'spiderman');
+    const p2 = new FighterController(1, 'ironman');
     p1.resetForRound();
     p2.resetForRound();
     p1.x = -0.3;
@@ -87,8 +87,8 @@ describe('Combat resolution, combos, blocks, counters, and grabs', () => {
   });
 
   it('supports hit-confirm chain combos with damage scaling', () => {
-    const p1 = new FighterController(0, 'rahul');
-    const p2 = new FighterController(1, 'yogi');
+    const p1 = new FighterController(0, 'ironman');
+    const p2 = new FighterController(1, 'thor');
     p1.resetForRound();
     p2.resetForRound();
     p1.x = -0.3;
@@ -109,13 +109,13 @@ describe('Combat resolution, combos, blocks, counters, and grabs', () => {
     expect(r2).not.toBeNull();
     expect(r2!.moveId).toBe('cross');
     expect(p2.comboHits).toBe(2);
-    // 2nd hit has 0.9 combo scaling: Math.round(6 * 0.9) = 5
-    expect(r2!.damage).toBe(5);
+    // 2nd hit has 0.9 combo scaling
+    expect(r2!.damage).toBe(Math.round(6 * 1.03 * 0.9));
   });
 
   it('triggers grab tech break when both fighters grab simultaneously', () => {
-    const p1 = new FighterController(0, 'modi');
-    const p2 = new FighterController(1, 'amit');
+    const p1 = new FighterController(0, 'wukong');
+    const p2 = new FighterController(1, 'steve');
     p1.resetForRound();
     p2.resetForRound();
     p1.x = -0.3;

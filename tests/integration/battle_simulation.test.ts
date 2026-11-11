@@ -5,7 +5,7 @@ import { ROSTER_ORDER } from '../../src/characters/roster';
 describe('Full Headless Battle Simulation Integration', () => {
   it('runs a full match through intro, roundCall, fight, super move, KO, FT2 victory & hazards', () => {
     const sim = new BattleSimulation(
-      { p1: 'modi', p2: 'didi', stage: 'jantar', difficulty: 'easy', mode: 'cpu', seed: 999 },
+      { p1: 'kratos', p2: 'spiderman', stage: 'jantar', difficulty: 'easy', mode: 'cpu', seed: 999 },
       false,
     );
 
@@ -36,10 +36,10 @@ describe('Full Headless Battle Simulation Integration', () => {
     expect(simClone.exportSnapshot()).toEqual(snap);
   });
 
-  it('supports every character super across all 11 fighters without exceptions', () => {
+  it('supports every character super across all 7 fighters without exceptions', () => {
     for (const id of ROSTER_ORDER) {
       const sim = new BattleSimulation(
-        { p1: id, p2: id === 'modi' ? 'rahul' : 'modi', stage: 'road', difficulty: 'easy', mode: 'cpu' },
+        { p1: id, p2: id === 'kratos' ? 'wukong' : 'kratos', stage: 'road', difficulty: 'easy', mode: 'cpu' },
         true,
       );
       sim.fighters[0].meter = 100;

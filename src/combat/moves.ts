@@ -276,23 +276,26 @@ export const BASE_MOVES: Record<MoveId, MoveDefinition> = {
 export const CHARACTER_CHAIN_OVERRIDES: Partial<
   Record<FighterId, Partial<Record<MoveId, { punch?: MoveId; kick?: MoveId }>>>
 > = {
-  modi: {
+  kratos: {
     cross: { punch: 'special1', kick: 'finisher' },
+  },
+  wukong: {
+    jab: { punch: 'cross', kick: 'special2' },
+    cross: { punch: 'special1', kick: 'roundhouse' },
+  },
+  spiderman: {
+    lowJab: { punch: 'uppercut', kick: 'special2' },
   },
 };
 
 export const CHARACTER_REACH_OVERRIDES: Partial<Record<FighterId, Partial<Record<MoveId, number>>>> = {
-  modi: { jab: 0.72, kick: 0.94, roundhouse: 1.05, sweep: 1.0, special2: 0.94 },
-  rahul: { cross: 0.77, kick: 0.89, finisher: 1.06, sweep: 0.97, airKick: 0.93 },
-  didi: { jab: 0.65, kick: 0.78, roundhouse: 0.84, special2: 0.8, airKick: 0.8 },
-  trump: { kick: 1.05, roundhouse: 1.0, sweep: 0.92, special2: 0.92, airKick: 1.04 },
-  yogi: { jab: 0.74, kick: 0.8, roundhouse: 0.95, finisher: 0.88, sweep: 0.94 },
-  nitin: { jab: 0.86, cross: 0.84, kick: 1.0, finisher: 1.08, sweep: 1.04, special2: 0.97 },
-  ravi: { jab: 0.73, kick: 0.84, roundhouse: 0.94, finisher: 0.92, sweep: 0.94 },
-  lalu: { jab: 0.76, kick: 0.86, roundhouse: 0.82, special2: 0.92, airKick: 0.84 },
-  amit: { jab: 0.8, kick: 0.91, roundhouse: 1.0, finisher: 0.98, sweep: 1.02 },
-  dhruv: { cross: 0.81, kick: 0.89, roundhouse: 1.06, finisher: 1.01, airKick: 1.0 },
-  mbapu: { jab: 0.78, cross: 0.85, roundhouse: 1.04, finisher: 1.0, airKick: 1.06 },
+  kratos: { jab: 0.78, cross: 0.92, kick: 0.88, roundhouse: 1.06, finisher: 1.04, special1: 1.02, special2: 1.15 },
+  wukong: { jab: 0.86, cross: 0.96, kick: 0.95, roundhouse: 1.12, finisher: 1.14, sweep: 1.08, special1: 1.24, special2: 1.05 },
+  michael: { jab: 0.74, cross: 0.82, kick: 0.88, lowJab: 0.72, sweep: 0.96, special1: 1.12, special2: 0.98 },
+  spiderman: { jab: 0.76, cross: 0.84, kick: 0.96, roundhouse: 1.08, finisher: 1.02, airKick: 1.02, special1: 1.18, special2: 1.08 },
+  ironman: { jab: 0.78, cross: 0.86, kick: 0.92, finisher: 1.04, special1: 1.16, special2: 1.1 },
+  thor: { jab: 0.82, cross: 0.94, kick: 0.9, roundhouse: 1.08, finisher: 1.08, special1: 1.12, special2: 1.06 },
+  steve: { jab: 0.84, cross: 0.95, kick: 0.92, uppercut: 0.92, finisher: 1.08, special1: 1.12, special2: 1.08 },
 };
 
 export function moveTotalFrames(move: MoveDefinition): number {

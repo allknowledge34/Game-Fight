@@ -27,6 +27,12 @@ export class SuperDirector {
     this.impactTriggered = false;
   }
 
+  private addProp(obj: THREE.Object3D, role?: string): void {
+    if (role) obj.userData.role = role;
+    this.group.add(obj);
+    this.meshes.push(obj);
+  }
+
   private buildForCinematic(cin: ActiveCinematic, snap: BattleStateSnapshot): void {
     this.clear();
     const caster = snap.fighters[cin.casterSide];
@@ -34,208 +40,187 @@ export class SuperDirector {
     const dir = caster.facing;
 
     if (cin.kind === 'budget') {
-      // Red Bahi-Khata ledger slab + coins
-      const book = new THREE.Mesh(
-        new THREE.BoxGeometry(0.95, 1.25, 0.28),
-        new THREE.MeshStandardMaterial({ color: 0xb91c1c, emissive: 0x550000, roughness: 0.45 }),
+      // Tactical Supply Counter Drop Crate (Anvil & Supply Crate slamming onto Boss)
+      const crate = new THREE.Group();
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(1.1, 1.1, 1.1),
+        new THREE.MeshStandardMaterial({ color: 0xb91c1c, emissive: 0x7f1d1d, roughness: 0.4 }),
       );
-      book.position.set(target.x, 2.8, 0.2);
-      book.userData.role = 'drop';
-      this.group.add(book);
-      this.meshes.push(book);
+      const trim = new THREE.Mesh(
+        new THREE.BoxGeometry(1.18, 0.2, 1.18),
+        new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8 }),
+      );
+      crate.add(body, trim);
+      crate.position.set(target.x, 3.6, 0);
+      this.addProp(crate, 'drop');
       return;
     }
 
     if (cin.kind === 'grapple') {
       const ring = new THREE.Mesh(
         new THREE.TorusGeometry(0.85, 0.05, 8, 32),
-        new THREE.MeshBasicMaterial({ color: caster.facing > 0 ? 0xff9933 : 0x2e9bff }),
+        new THREE.MeshBasicMaterial({ color: caster.facing > 0 ? 0xf59e0b : 0x38bdf8 }),
       );
       ring.rotation.x = Math.PI / 2;
       ring.position.set((caster.x + target.x) * 0.5, 0.15, 0);
-      ring.userData.role = 'spin';
-      this.group.add(ring);
-      this.meshes.push(ring);
+      this.addProp(ring, 'spin');
       return;
     }
 
-    // Distinct signature props for all 11 fighter supers
     switch (cin.fighterId) {
-      case 'modi': {
-        const chakra = new THREE.Group();
-        const ring = new THREE.Mesh(
-          new THREE.TorusGeometry(0.7, 0.08, 12, 36),
-          new THREE.MeshStandardMaterial({ color: 0xffb347, emissive: 0xff6a00, emissiveIntensity: 1.1 }),
+      case 'kratos': {
+        // Spartan Rage: fiery ground aura + orbiting Blades of Chaos + colossal falling Leviathan Axe
+        const rageRing = new THREE.Mesh(
+          new THREE.RingGeometry(0.7, 1.25, 32),
+          new THREE.MeshBasicMaterial({ color: 0xff4500, side: THREE.DoubleSide }),
         );
-        chakra.add(ring);
-        for (let i = 0; i < 8; i++) {
-          const ray = new THREE.Mesh(
-            new THREE.BoxGeometry(0.08, 1.35, 0.06),
-            new THREE.MeshBasicMaterial({ color: 0xffe28a }),
-          );
-          ray.rotation.z = (i / 8) * Math.PI;
-          chakra.add(ray);
+        rageRing.rotation.x = -Math.PI / 2;
+        rageRing.position.set(caster.x, 0.04, 0);
+        this.addProp(rageRing, 'spin');
+
+        const bladesOrbit = new THREE.Group();
+        const bladeMat = new THREE.MeshBasicMaterial({ color: 0xff7b2e });
+        for (const bx of [-0.95, 0.95]) {
+          const blade = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.72, 0.05), bladeMat);
+          blade.position.set(bx, 0, 0);
+          bladesOrbit.add(blade);
         }
-        chakra.position.set(caster.x + dir * 0.5, 1.6, 0.1);
-        chakra.userData.role = 'projectile';
-        this.group.add(chakra);
-        this.meshes.push(chakra);
+        bladesOrbit.position.set(target.x, 1.25, 0);
+        this.addProp(bladesOrbit, 'spin');
+
+        const megaAxe = new THREE.Group();
+        const haft = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.2, 10), new THREE.MeshStandardMaterial({ color: 0x5c361e }));
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.85, 0.7), new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.9 }));
+        head.position.set(0, -0.8, 0.25);
+        megaAxe.add(haft, head);
+        megaAxe.position.set(target.x, 3.8, 0);
+        this.addProp(megaAxe, 'drop');
         break;
       }
 
-      case 'rahul': {
-        const machine = new THREE.Group();
-        const body = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.55, 0.65, 1.25, 14),
-          new THREE.MeshStandardMaterial({ color: 0x2e9bff, metalness: 0.6, roughness: 0.3 }),
+      case 'wukong': {
+        // Great Sage: twin golden shadow clones + skyscraper Ruyi Jingu Bang pillar drop
+        const cloneMat = new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.65 });
+        for (const off of [-0.9, 0.9]) {
+          const clone = new THREE.Mesh(new THREE.CapsuleGeometry(0.24, 0.95, 6, 10), cloneMat);
+          clone.position.set(target.x + off, 0.95, -0.35);
+          this.addProp(clone, 'pulse');
+        }
+        const giantStaff = new THREE.Group();
+        const shaft = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.18, 0.18, 3.4, 16),
+          new THREE.MeshStandardMaterial({ color: 0xb91c1c, emissive: 0x7f1d1d }),
         );
-        body.rotation.z = Math.PI / 2;
-        const hopper = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.42, 0.2, 0.5, 10),
-          new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.5 }),
-        );
-        hopper.position.set(0, 0.72, 0);
-        machine.add(body, hopper);
-        machine.position.set((caster.x + target.x) * 0.5, 0.75, -0.4);
-        machine.userData.role = 'spin';
-        this.group.add(machine);
-        this.meshes.push(machine);
+        const capTop = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.5, 16), new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xf59e0b, emissiveIntensity: 1.1 }));
+        capTop.position.y = 1.6;
+        const capBot = capTop.clone();
+        capBot.position.y = -1.6;
+        giantStaff.add(shaft, capTop, capBot);
+        giantStaff.position.set(target.x, 4.2, 0);
+        this.addProp(giantStaff, 'drop');
         break;
       }
 
-      case 'didi': {
-        const pot = new THREE.Mesh(
-          new THREE.SphereGeometry(0.58, 16, 12, 0, Math.PI * 2, Math.PI * 0.3, Math.PI * 0.7),
-          new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.5, side: THREE.DoubleSide }),
-        );
-        pot.position.set(caster.x + dir * 0.65, 0.6, 0.1);
-        const brew = new THREE.Mesh(
-          new THREE.CircleGeometry(0.5, 20),
-          new THREE.MeshBasicMaterial({ color: 0x3dff7a }),
-        );
-        brew.rotation.x = -Math.PI / 2;
-        brew.position.set(caster.x + dir * 0.65, 0.68, 0.1);
-        this.group.add(pot, brew);
-        this.meshes.push(pot, brew);
+      case 'michael': {
+        // Bullet-Time Focus: golden sniper reticle + rapid gold bullet tracer beams
+        const reticle = new THREE.Group();
+        const ring1 = new THREE.Mesh(new THREE.RingGeometry(0.8, 0.95, 32), new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide }));
+        const ring2 = new THREE.Mesh(new THREE.RingGeometry(0.32, 0.42, 24), new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide }));
+        const ch = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.05, 0.02), new THREE.MeshBasicMaterial({ color: 0xfef08a }));
+        const cv = new THREE.Mesh(new THREE.BoxGeometry(0.05, 2.1, 0.02), new THREE.MeshBasicMaterial({ color: 0xfef08a }));
+        reticle.add(ring1, ring2, ch, cv);
+        reticle.position.set(target.x, 1.32, 0.35);
+        this.addProp(reticle, 'spin');
+
+        for (let b = 0; b < 4; b++) {
+          const tracer = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.03, 0.03, 1.1, 8),
+            new THREE.MeshBasicMaterial({ color: 0xfde047 }),
+          );
+          tracer.rotation.z = Math.PI / 2;
+          tracer.position.set(caster.x + dir * (0.6 + b * 0.25), 1.2 + (b - 1.5) * 0.14, 0);
+          this.addProp(tracer, 'projectile');
+        }
         break;
       }
 
-      case 'trump': {
-        const stamp = new THREE.Group();
-        const block = new THREE.Mesh(
-          new THREE.BoxGeometry(1.3, 0.45, 0.8),
-          new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.4 }),
+      case 'spiderman': {
+        // Maximum Spider: crisscrossing luminous web beams & cocoon tether sphere
+        const webSphere = new THREE.Mesh(
+          new THREE.IcosahedronGeometry(0.95, 1),
+          new THREE.MeshBasicMaterial({ color: 0xf8fafc, wireframe: true }),
         );
-        const handle = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.22, 0.28, 0.9, 12),
-          new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.7 }),
-        );
-        handle.position.y = 0.65;
-        stamp.add(block, handle);
-        stamp.position.set(target.x, 3.2, 0);
-        stamp.userData.role = 'drop';
-        this.group.add(stamp);
-        this.meshes.push(stamp);
+        webSphere.position.set(target.x, 1.25, 0);
+        this.addProp(webSphere, 'spin');
+
+        for (let w = 0; w < 6; w++) {
+          const strand = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.025, 0.025, 3.6, 6),
+            new THREE.MeshBasicMaterial({ color: 0xe2e8f0 }),
+          );
+          strand.rotation.z = (w / 6) * Math.PI;
+          strand.position.set(target.x, 1.3, 0.1);
+          this.addProp(strand, 'pulse');
+        }
         break;
       }
 
-      case 'yogi': {
-        const dozer = new THREE.Group();
-        const cab = new THREE.Mesh(
-          new THREE.BoxGeometry(1.4, 1.2, 1.2),
-          new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.45 }),
+      case 'ironman': {
+        // Maximum Pulse Unibeam: expanding chest reactor sphere + blinding cyan plasma cannon cylinder
+        const core = new THREE.Mesh(
+          new THREE.SphereGeometry(0.36, 16, 16),
+          new THREE.MeshBasicMaterial({ color: 0x67e8f9 }),
         );
-        cab.position.set(-dir * 0.4, 1.0, 0);
-        const bucket = new THREE.Mesh(
-          new THREE.BoxGeometry(0.45, 0.85, 1.45),
-          new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7 }),
+        core.position.set(caster.x + dir * 0.35, 1.38, 0);
+        this.addProp(core, 'pulse');
+
+        const beamLen = Math.max(2.5, Math.abs(target.x - caster.x) + 1.8);
+        const beam = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.34, 0.44, beamLen, 18),
+          new THREE.MeshBasicMaterial({ color: 0x38f2ff, transparent: true, opacity: 0.88 }),
         );
-        bucket.position.set(dir * 0.8, 0.55, 0);
-        dozer.add(cab, bucket);
-        dozer.position.set(caster.x - dir * 2.4, 0, 0);
-        dozer.userData.role = 'charge';
-        this.group.add(dozer);
-        this.meshes.push(dozer);
+        beam.rotation.z = Math.PI / 2;
+        beam.position.set((caster.x + target.x) * 0.5 + dir * 0.3, 1.35, 0);
+        this.addProp(beam, 'pulse');
         break;
       }
 
-      case 'nitin': {
-        const hole = new THREE.Mesh(
-          new THREE.CircleGeometry(0.9, 24),
-          new THREE.MeshBasicMaterial({ color: 0x050507 }),
+      case 'thor': {
+        // Bifrost Thunderstrike: rainbow Bifrost cylinder column + jagged lightning + Mjolnir sky crash
+        const rainbow = [0x38bdf8, 0xa855f7, 0xfacc15];
+        rainbow.forEach((col, i) => {
+          const cyl = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.55 + i * 0.25, 0.65 + i * 0.25, 6.2, 20, 1, true),
+            new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.35, side: THREE.DoubleSide }),
+          );
+          cyl.position.set(target.x, 3.0, 0);
+          this.addProp(cyl, 'spin');
+        });
+        const mjolnirSky = new THREE.Mesh(
+          new THREE.BoxGeometry(0.65, 0.55, 0.95),
+          new THREE.MeshStandardMaterial({ color: 0x94a3b8, emissive: 0x60e5ff, emissiveIntensity: 1.4 }),
         );
-        hole.rotation.x = -Math.PI / 2;
-        hole.position.set(target.x, 0.03, 0);
-        this.group.add(hole);
-        this.meshes.push(hole);
+        mjolnirSky.position.set(target.x, 4.0, 0);
+        this.addProp(mjolnirSky, 'drop');
         break;
       }
 
-      case 'ravi': {
-        const clockDial = new THREE.Mesh(
-          new THREE.RingGeometry(1.1, 1.45, 36),
-          new THREE.MeshBasicMaterial({ color: 0xffd75f, side: THREE.DoubleSide }),
-        );
-        clockDial.position.set(target.x, 1.65, -0.5);
-        clockDial.userData.role = 'spin';
-        this.group.add(clockDial);
-        this.meshes.push(clockDial);
-        break;
-      }
-
-      case 'lalu': {
-        const train = new THREE.Group();
-        const engine = new THREE.Mesh(
-          new THREE.BoxGeometry(2.2, 1.25, 1.25),
-          new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.5 }),
-        );
-        engine.position.y = 0.85;
-        const lamp = new THREE.Mesh(
-          new THREE.SphereGeometry(0.24, 10, 10),
-          new THREE.MeshBasicMaterial({ color: 0xfff3a0 }),
-        );
-        lamp.position.set(dir * 1.15, 0.95, 0);
-        train.add(engine, lamp);
-        train.position.set(caster.x - dir * 3.8, 0, 0);
-        train.userData.role = 'charge';
-        this.group.add(train);
-        this.meshes.push(train);
-        break;
-      }
-
-      case 'amit': {
-        const knight = new THREE.Mesh(
-          new THREE.ConeGeometry(0.65, 1.8, 8),
-          new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.85, roughness: 0.25 }),
-        );
-        knight.position.set(target.x, 3.0, 0);
-        knight.userData.role = 'drop';
-        this.group.add(knight);
-        this.meshes.push(knight);
-        break;
-      }
-
-      case 'dhruv': {
-        const phone = new THREE.Mesh(
-          new THREE.BoxGeometry(1.15, 2.1, 0.18),
-          new THREE.MeshStandardMaterial({ color: 0x0f172a, emissive: 0x22d3ee, emissiveIntensity: 0.8 }),
-        );
-        phone.position.set(target.x, 2.8, 0);
-        phone.userData.role = 'drop';
-        this.group.add(phone);
-        this.meshes.push(phone);
-        break;
-      }
-
-      case 'mbapu': {
-        const charkha = new THREE.Mesh(
-          new THREE.TorusGeometry(1.25, 0.08, 12, 40),
-          new THREE.MeshStandardMaterial({ color: 0xffd75f, emissive: 0xffb700, emissiveIntensity: 1.0 }),
-        );
-        charkha.position.set(caster.x, 1.65, -0.3);
-        charkha.userData.role = 'spin';
-        this.group.add(charkha);
-        this.meshes.push(charkha);
+      case 'steve': {
+        // Boss Overworld Apocalypse: obsidian confinement pillars + falling anvil + TNT blocks
+        const obsMat = new THREE.MeshStandardMaterial({ color: 0x1e1b2e, emissive: 0x581c87, emissiveIntensity: 0.6 });
+        for (const off of [-1.05, 1.05]) {
+          const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.45, 2.2, 0.45), obsMat);
+          pillar.position.set(target.x + off, 1.1, 0);
+          this.addProp(pillar, 'pulse');
+        }
+        const anvil = new THREE.Group();
+        const anvilTop = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.52, 0.8), new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.75 }));
+        anvilTop.position.y = 0.25;
+        const anvilBase = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.45, 0.65), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+        anvilBase.position.y = -0.25;
+        anvil.add(anvilTop, anvilBase);
+        anvil.position.set(target.x, 4.1, 0);
+        this.addProp(anvil, 'drop');
         break;
       }
     }
@@ -265,40 +250,39 @@ export class SuperDirector {
     const target = snap.fighters[cin.casterSide === 0 ? 1 : 0];
     const dir = caster.facing;
 
-    arena.setMood(cin.kind === 'grapple' ? 0.25 : 0.72);
+    arena.setMood(cin.kind === 'grapple' ? 0.25 : 0.75);
 
     for (const m of this.meshes) {
       if (m.userData.role === 'spin') {
         m.rotation.z += dt * 7;
-        m.rotation.y += dt * 4;
+        m.rotation.y += dt * 5;
       } else if (m.userData.role === 'projectile') {
         const startX = caster.x + dir * 0.5;
-        m.position.x = startX + (target.x - startX) * Math.min(1, k * 1.3);
-        m.rotation.z += dt * 16;
+        m.position.x = startX + (target.x - startX) * Math.min(1, k * 1.4);
       } else if (m.userData.role === 'drop') {
         const dropK = Math.min(1, Math.max(0, (k - 0.35) / 0.38));
-        m.position.y = 3.2 - dropK * 2.45;
-      } else if (m.userData.role === 'charge') {
-        const startX = caster.x - dir * 3.8;
-        m.position.x = startX + (target.x - startX) * Math.min(1, k * 1.32);
+        m.position.y = 3.8 - dropK * 2.85;
+      } else if (m.userData.role === 'pulse') {
+        const s = 0.92 + Math.sin(cin.elapsed * 20) * 0.12;
+        m.scale.setScalar(s);
       }
     }
 
     if (cin.damageApplied && !this.impactTriggered) {
       this.impactTriggered = true;
+      const fxColor = cin.fighterId === 'thor' ? 0x60e5ff : cin.fighterId === 'ironman' ? 0x38f2ff : cin.fighterId === 'steve' ? 0xa855f7 : 0xffd23f;
       particles.hitSpark(target.x, 1.35, true, dir);
-      particles.shockwave(target.x, 1.1, 0.2, 0xffd23f, 0.35, 3.8, 0.55);
-      camera.shake(0.45, 0.5);
+      particles.shockwave(target.x, 1.1, 0.2, fxColor, 0.35, 4.2, 0.6);
+      camera.shake(0.5, 0.55);
     }
 
-    // Dramatic angled camera during supers
     if (cin.kind !== 'grapple') {
       const midX = (caster.x + target.x) * 0.5;
       camera.setCinema(
-        new THREE.Vector3(midX - dir * 1.4, 2.0 + Math.sin(k * Math.PI) * 0.4, 4.9),
-        new THREE.Vector3(target.x, 1.25, 0),
-        4.8,
-        40,
+        new THREE.Vector3(midX - dir * 1.35, 1.9 + Math.sin(k * Math.PI) * 0.45, 4.6),
+        new THREE.Vector3(target.x, 1.2, 0),
+        5.0,
+        38,
         0.08,
       );
     }

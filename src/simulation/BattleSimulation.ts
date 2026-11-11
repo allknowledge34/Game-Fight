@@ -8,7 +8,7 @@ import type {
   MatchOptions,
   PlayerInput,
 } from '../core/types';
-import { BOSS_MULTIPLIERS } from '../characters/roster';
+import { BOSS_ID, BOSS_MULTIPLIERS } from '../characters/roster';
 import { resolveMutualCombat, resolvePushboxes } from '../collision/CombatResolver';
 import { BASE_MOVES } from '../combat/moves';
 import { RoundManager, type RoundOutcome } from '../combat/RoundManager';
@@ -91,7 +91,7 @@ export class BattleSimulation {
   constructor(options: MatchOptions, fastIntro = false) {
     this.options = options;
     this.rng = new SeededRng(options.seed ?? 202611);
-    const p2AsBoss = options.mode === 'cpu' && options.p2 === 'mbapu';
+    const p2AsBoss = options.mode === 'cpu' && options.p2 === BOSS_ID;
     this.hasBossMatch = p2AsBoss;
     this.bossSide = p2AsBoss ? 1 : null;
 
@@ -434,7 +434,7 @@ export class BattleSimulation {
       targetSide,
       text:
         kind === 'budget'
-          ? 'NIRMALA BUDGET!'
+          ? 'OVERWORLD COUNTER DROP!'
           : kind === 'super'
             ? caster.profile.superName
             : caster.profile.moveNames.grab ?? 'GRAB!',

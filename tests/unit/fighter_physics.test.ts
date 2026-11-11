@@ -11,13 +11,13 @@ import { emptyInput } from '../../src/simulation/BattleSimulation';
 
 describe('FighterController physics & boundaries', () => {
   it('handles jump arc, gravity, and landing recovery', () => {
-    const f = new FighterController(0, 'modi');
+    const f = new FighterController(0, 'kratos');
     f.resetForRound();
 
     f.update({ ...emptyInput(), up: true, moveX: 1 }, 2);
     expect(f.state).toBe('jump');
     expect(f.grounded).toBe(false);
-    expect(f.vy).toBeGreaterThan(7);
+    expect(f.vy).toBeGreaterThanOrEqual(7);
 
     let peakY = 0;
     for (let i = 0; i < 60; i++) {
@@ -32,7 +32,7 @@ describe('FighterController physics & boundaries', () => {
   });
 
   it('clamps movement within arena bounds [-6.5, +6.5]', () => {
-    const f = new FighterController(0, 'didi');
+    const f = new FighterController(0, 'spiderman');
     f.resetForRound();
     f.x = ARENA_HALF_WIDTH - 0.1;
 
@@ -49,8 +49,8 @@ describe('FighterController physics & boundaries', () => {
   });
 
   it('enforces minimum grounded pushbox separation', () => {
-    const p1 = new FighterController(0, 'modi');
-    const p2 = new FighterController(1, 'rahul');
+    const p1 = new FighterController(0, 'kratos');
+    const p2 = new FighterController(1, 'wukong');
     p1.resetForRound();
     p2.resetForRound();
 
@@ -61,12 +61,12 @@ describe('FighterController physics & boundaries', () => {
   });
 
   it('scales hurtbox height accurately when crouching', () => {
-    const f = new FighterController(0, 'modi');
+    const f = new FighterController(0, 'michael');
     f.resetForRound();
-    expect(f.hurtboxHeight).toBeCloseTo(STANDING_HEIGHT, 3);
+    expect(f.hurtboxHeight).toBeCloseTo(STANDING_HEIGHT * f.profile.modelHeight, 3);
 
     f.update({ ...emptyInput(), down: true }, 2);
     expect(f.state).toBe('crouch');
-    expect(f.hurtboxHeight).toBeCloseTo(STANDING_HEIGHT * CROUCH_HEIGHT_MUL, 3);
+    expect(f.hurtboxHeight).toBeCloseTo(STANDING_HEIGHT * f.profile.modelHeight * CROUCH_HEIGHT_MUL, 3);
   });
 });

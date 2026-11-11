@@ -89,9 +89,9 @@
 
     <div id="announce" role="status" aria-live="polite"></div>
 
-    <button id="budget-meter" type="button" aria-label="Trigger Nirmala Budget Assist">
-      <span class="hint"><kbd>B</kbd> BUDGET ASSIST</span>
-      <span class="label">BUDGET</span>
+    <button id="budget-meter" type="button" aria-label="Trigger Counter Drop Assist">
+      <span class="hint"><kbd>B</kbd> COUNTER DROP!</span>
+      <span class="label">COUNTER</span>
       <div class="track"><i></i></div>
       <span class="key">B</span>
     </button>
@@ -108,7 +108,7 @@
         <button class="touch-btn kick" data-btn="kick" type="button">K<small>KICK</small></button>
         <button class="touch-btn grab" data-btn="grab" type="button">I<small>GRAB</small></button>
         <button class="touch-btn super" data-btn="super" type="button">L<small>SUPER</small></button>
-        <button id="touch-budget" class="touch-budget" type="button" hidden>📕<small>BUDGET</small></button>
+        <button id="touch-budget" class="touch-budget" type="button" hidden>💥<small>DROP</small></button>
       </div>
     </div>
 
@@ -119,7 +119,7 @@
     <!-- Loading Screen -->
     <div id="loading" class="screen">
       <div class="logo">SANSAD <span>SHOWDOWN</span></div>
-      <p>Preparing 3D arena &amp; neta rigs…</p>
+      <p>Preparing 3D arena &amp; fighter rigs…</p>
       <div class="load-bar"><i id="load-fill"></i></div>
     </div>
 
@@ -127,69 +127,66 @@
     <main id="title" class="screen hidden">
       <h1 class="logo">SANSAD <span>SHOWDOWN</span></h1>
       <div class="tag">THE GREAT KURSI FIGHT · 🪔 DIWALI SPECIAL</div>
-      <button id="title-start-btn" class="big" type="button">ENTER THE ARENA</button>
-      <div class="press">PRESS ENTER / CLICK TO START</div>
-      <div class="disclaimer">Political satire and parody. Not connected to or endorsed by any person or party.</div>
+      <button id="title-start-btn" class="press-btn" type="button">PRESS ENTER / CLICK TO START</button>
+      <div class="disclaimer">Multiverse arcade brawl set in iconic Sansad Showdown arenas.</div>
     </main>
 
     <!-- Select Screen -->
     <section id="select" class="screen hidden" aria-label="Fighter Selection">
       <div class="sel-header">
-        <h2>SELECT YOUR NETA</h2>
+        <h2 id="select-heading">SELECT YOUR FIGHTER</h2>
         <div class="controls-strip">
-          Pick tap a face (1P, then CPU) · ←/→ you · ↑/↓ CPU · Stage <kbd>T</kbd> · CPU <kbd>1/2/3</kbd> · Fight <kbd>Enter</kbd><br />
-          Move <kbd>A/D</kbd> or <kbd>←/→</kbd> · Jump <kbd>W</kbd> · Crouch <kbd>S</kbd> · Block hold back · Punch <kbd>J</kbd> · Kick <kbd>K</kbd> · Grab <kbd>I</kbd> · Super <kbd>L/Space</kbd> · Pause <kbd>Esc</kbd>
+          <b>Pick</b> tap a face (1P, then CPU) · ←/→ you · ↑/↓ CPU · <b>Stage</b> T · <b>CPU</b> 1/2/3 · <b>Fight</b> Enter<br />
+          <b>Move</b> A/D or ←/→ · <b>Jump</b> W · <b>Crouch</b> S · <b>Block</b> hold back · <b>Punch</b> J · <b>Kick</b> K · <b>Grab</b> I · <b>Super</b> L/Space · <b>Pause</b> Esc
         </div>
       </div>
 
       <div class="vs-badge" aria-hidden="true">VS</div>
 
+      <div id="card-p1" class="fighter-card p1">
+        <div class="card-role">1P · YOU</div>
+        <h3 class="card-name">KRATOS</h3>
+        <div class="card-party">Ghost of Sparta</div>
+        <div class="card-super">SUPER · SPARTAN RAGE</div>
+        <p class="card-desc"></p>
+      </div>
+
       <div class="sel-footer">
-        <div class="pick-prompt">PICK YOUR NETA</div>
+        <div id="pick-prompt" class="pick-prompt">PICK YOUR FIGHTER</div>
         <div id="roster-grid" class="grid" role="list"></div>
 
-        <div class="sel-bottom">
-          <div id="card-p1" class="fighter-card p1">
-            <div class="card-role">1P · YOU</div>
-            <h3 class="card-name">MITRAMAN</h3>
-            <div class="card-party">Team Vaada</div>
-            <div class="card-super">SUPER · MITRA CHAKRA</div>
-            <p class="card-desc"></p>
-          </div>
-
-          <div class="sel-center-controls">
-            <div class="options">
-              <div class="difficulty stage-pick">
-                <span>STAGE</span>
-                <button type="button" data-stage="sansad" class="active">SANSAD</button>
-                <button type="button" data-stage="jantar">JANTAR MANTAR</button>
-                <button type="button" data-stage="road">DESI SADAK</button>
-              </div>
-              <div class="difficulty cpu-level">
-                <span>CPU</span>
-                <button type="button" data-diff="easy">EASY</button>
-                <button type="button" data-diff="normal" class="active">NORMAL</button>
-                <button type="button" data-diff="hard">HARD</button>
-              </div>
+        <div class="sel-center-controls">
+          <div class="options">
+            <div class="difficulty stage-pick">
+              <span>STAGE</span>
+              <button type="button" data-stage="sansad" class="active">SANSAD</button>
+              <button type="button" data-stage="jantar">JANTAR MANTAR</button>
+              <button type="button" data-stage="road">DESI SADAK</button>
             </div>
-            <div class="sel-actions">
-              <button id="online-btn" class="online-btn" type="button">PLAY WITH A FRIEND</button>
-              <button id="fight-btn" class="big" type="button">FIGHT!</button>
-            </div>
-            <div id="online-bar" class="online-bar hidden">
-              <span id="online-status"></span>
-              <button id="online-leave" type="button">LEAVE ROOM</button>
+            <div class="difficulty cpu-level">
+              <span>CPU</span>
+              <button type="button" data-diff="easy">EASY</button>
+              <button type="button" data-diff="normal" class="active">NORMAL</button>
+              <button type="button" data-diff="hard">HARD</button>
             </div>
           </div>
-
-          <div id="card-p2" class="fighter-card p2">
-            <div class="card-role">CPU</div>
-            <h3 class="card-name">YATRA BOY</h3>
-            <div class="card-party">Team Yatra</div>
-            <div class="card-super">SUPER · ALOO SE SONA</div>
-            <p class="card-desc"></p>
+          <div class="sel-actions">
+            <button id="online-btn" class="online-btn" type="button">🌐 PLAY WITH A FRIEND</button>
+            <button id="fight-btn" class="big" type="button">FIGHT!</button>
+          </div>
+          <div id="online-bar" class="online-bar hidden">
+            <span id="online-status"></span>
+            <button id="online-leave" type="button">LEAVE ROOM</button>
           </div>
         </div>
+      </div>
+
+      <div id="card-p2" class="fighter-card p2">
+        <div class="card-role">CPU</div>
+        <h3 class="card-name">SUN WUKONG</h3>
+        <div class="card-party">The Great Sage</div>
+        <div class="card-super">SUPER · GREAT SAGE TRANSFORM</div>
+        <p class="card-desc"></p>
       </div>
     </section>
 
@@ -256,7 +253,7 @@
       <div class="newspaper">
         <div id="paper-masthead" class="masthead">THE DAILY JUMLA</div>
         <div id="paper-date" class="dateline">NEW DELHI · SPECIAL EDITION</div>
-        <h2 id="paper-headline" class="headline">MITRAMAN SWEEPS SANSAD!</h2>
+        <h2 id="paper-headline" class="headline">KRATOS SWEEPS SANSAD!</h2>
         <div class="paper-body">
           <figure>
             <img id="paper-photo" alt="Match moment snapshot" />
@@ -265,6 +262,7 @@
           <div class="paper-copy">
             <p id="paper-sub" class="paper-sub"></p>
             <p id="paper-excuse" class="excuse"></p>
+            <p class="filler">Sources say the ringside chaiwala demanded compensation for broken cups. A stray cow halting combat was seen investigating Steve's TNT blocks. Exit polls remain baffled.</p>
           </div>
         </div>
         <div id="result-title" class="stamp">YOU WIN!</div>

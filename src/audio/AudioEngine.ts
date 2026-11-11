@@ -1,3 +1,4 @@
+import type { FighterId } from '../core/types';
 import { isAudioMuted, setAudioMuted } from '../core/storage';
 
 export type TrackId = 'none' | 'intro' | 'background' | 'battle';
@@ -18,6 +19,10 @@ export class AudioEngine {
   private activeVoices = 0;
   private readonly maxVoices = 8;
 
+  private audioCache = new Map<string, AudioBuffer>();
+  private loadingClips = new Set<string>();
+  private currentSpeechSource: AudioBufferSourceNode | null = null;
+
   onStateChange: (() => void) | null = null;
 
   constructor() {
@@ -31,7 +36,9 @@ export class AudioEngine {
   unlock(): void {
     if (typeof window === 'undefined') return;
     if (!this.ctx) {
-      const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      const AC =
+        window.AudioContext ??
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!AC) return;
       this.ctx = new AC();
       const comp = this.ctx.createDynamicsCompressor();
@@ -46,7 +53,7 @@ export class AudioEngine {
       comp.connect(this.output).connect(this.ctx.destination);
 
       this.master = this.ctx.createGain();
-      this.master.gain.value = this.muted ? 0 : 0.7;
+      this.master.gain.value = this.muted ? 0 : 0.72;
       this.master.connect(comp);
 
       this.sfxBus = this.ctx.createGain();
@@ -66,6 +73,63 @@ export class AudioEngine {
     }
   }
 
+  async playVoiceClip(url: string, duckMusic = true): Promise<void> {
+    if (typeof window === 'undefined' || !url || this.muted || this.paused) return;
+    if (!this.ctx) this.unlock();
+    if (!this.ctx || !this.sfxBus) return;
+
+    let buf = this.audioCache.get(url);
+    if (!buf) {
+      if (this.loadingClips.has(url)) return;
+      this.loadingClips.add(url);
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const arr = await res.arrayBuffer();
+        buf = await this.ctx.decodeAudioData(arr);
+        this.audioCache.set(url, buf);
+      } catch {
+        return;
+      } finally {
+        this.loadingClips.delete(url);
+      }
+    }
+
+    if (this.muted || this.paused || !this.ctx || !this.sfxBus) return;
+    try {
+      this.currentSpeechSource?.stop();
+    } catch {
+      // Ignore already stopped buffer source
+    }
+
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const gain = this.ctx.createGain();
+    gain.gain.value = 1.05;
+    src.connect(gain).connect(this.sfxBus);
+
+    if (duckMusic && this.musicGain && this.musicEnabled) {
+      const t = this.ctx.currentTime;
+      this.musicGain.gain.setTargetAtTime(0.08, t, 0.04);
+      src.onended = () => {
+        if (this.musicGain && this.ctx && this.musicEnabled) {
+          this.musicGain.gain.setTargetAtTime(0.2, this.ctx.currentTime, 0.12);
+        }
+      };
+    }
+
+    this.currentSpeechSource = src;
+    src.start();
+  }
+
+  playAnnouncer(key: 'round1' | 'round2' | 'round3' | 'fight' | 'ko' | 'win' | 'lose' | 'boss'): void {
+    void this.playVoiceClip(`/audio/ann_${key}.wav`, true);
+  }
+
+  playCharacterLine(id: FighterId, kind: 'intro' | 'super' | 'win'): void {
+    void this.playVoiceClip(`/audio/voice_${id}_${kind}.wav`, true);
+  }
+
   toggleMute(): boolean {
     this.setMuted(!this.muted);
     return this.muted;
@@ -74,8 +138,15 @@ export class AudioEngine {
   setMuted(muted: boolean): void {
     this.muted = muted;
     setAudioMuted(muted);
-    if (this.master) this.master.gain.value = muted ? 0 : 0.7;
+    if (this.master) this.master.gain.value = muted ? 0 : 0.72;
     if (this.sfxBus) this.sfxBus.gain.value = muted ? 0 : 1;
+    if (muted && this.currentSpeechSource) {
+      try {
+        this.currentSpeechSource.stop();
+      } catch {
+        // Ignore
+      }
+    }
     this.onStateChange?.();
   }
 
@@ -106,7 +177,7 @@ export class AudioEngine {
       if (!this.ctx || this.ctx.state !== 'running' || this.muted || !this.musicEnabled || this.paused) return;
       if (this.currentTrack === 'none') return;
       this.playMusicBeat();
-    }, 190);
+    }, 185);
   }
 
   private playMusicBeat(): void {
@@ -115,7 +186,6 @@ export class AudioEngine {
     const step = this.musicStep++;
 
     if (this.currentTrack === 'battle') {
-      // High-energy dholak + synth bass groove (16-step pattern)
       const bassNotes = [110, 110, 130.8, 110, 146.8, 130.8, 164.8, 146.8];
       if (step % 2 === 0) {
         this.tone(bassNotes[(step >> 1) % bassNotes.length], 0.14, 'sawtooth', 0.14, this.musicGain, t, 88);
@@ -127,7 +197,6 @@ export class AudioEngine {
         this.noiseBurst(0.04, 0.12, 2400, this.musicGain, t);
       }
     } else if (this.currentTrack === 'background') {
-      // Broadcast TV satire theme (light sitar/synth arpeggio)
       const scale = [220, 261.6, 293.7, 329.6, 392.0, 440];
       if (step % 2 === 0) {
         const freq = scale[(step * 3) % scale.length];
@@ -217,11 +286,33 @@ export class AudioEngine {
     this.sfx((_ctx, d, t) => this.tone(420, 0.09, 'sine', 0.14, d, t, 260));
   }
 
-  hit(power = 1): void {
+  hit(power = 1, fighterId?: FighterId): void {
     const jitter = 0.96 + Math.random() * 0.08;
     this.sfx((_ctx, d, t) => {
-      this.tone(180 * jitter * (0.9 + power * 0.2), 0.14, 'sawtooth', 0.28, d, t, 42);
-      this.noiseBurst(0.09, 0.3, 1400, d, t);
+      if (fighterId === 'thor') {
+        this.tone(135 * jitter, 0.22, 'sawtooth', 0.28, d, t, 42);
+        this.tone(920, 0.08, 'square', 0.14, d, t, 310);
+      } else if (fighterId === 'ironman') {
+        this.tone(760 * jitter, 0.14, 'sine', 0.22, d, t, 220);
+        this.noiseBurst(0.08, 0.24, 2400, d, t);
+      } else if (fighterId === 'michael') {
+        this.tone(340 * jitter, 0.08, 'triangle', 0.3, d, t, 65);
+        this.noiseBurst(0.1, 0.32, 3200, d, t);
+      } else if (fighterId === 'spiderman') {
+        this.tone(540 * jitter, 0.07, 'sine', 0.2, d, t, 180);
+        this.noiseBurst(0.07, 0.2, 2600, d, t);
+      } else if (fighterId === 'steve') {
+        // Classic crisp blocky punch + pixel crunch
+        this.tone(240, 0.09, 'square', 0.24, d, t, 95);
+        this.noiseBurst(0.06, 0.26, 950, d, t);
+      } else if (fighterId === 'wukong') {
+        this.tone(280 * jitter, 0.12, 'triangle', 0.24, d, t, 120);
+        this.noiseBurst(0.09, 0.22, 1800, d, t);
+      } else {
+        // Kratos heavy steel/bone impact
+        this.tone(160 * jitter * (0.9 + power * 0.2), 0.16, 'sawtooth', 0.3, d, t, 38);
+        this.noiseBurst(0.1, 0.3, 1300, d, t);
+      }
     });
   }
 
@@ -236,10 +327,19 @@ export class AudioEngine {
     this.sfx((_ctx, d, t) => this.noiseBurst(0.11, 0.12, 950, d, t));
   }
 
-  superSting(): void {
+  superSting(fighterId?: FighterId): void {
     this.sfx((_ctx, d, t) => {
-      this.tone(220, 0.4, 'sawtooth', 0.25, d, t, 880);
-      this.tone(440, 0.45, 'triangle', 0.2, d, t + 0.05, 110);
+      if (fighterId === 'michael') {
+        this.tone(180, 0.5, 'sine', 0.28, d, t, 48);
+      } else if (fighterId === 'ironman') {
+        this.tone(260, 0.55, 'sawtooth', 0.26, d, t, 1320);
+      } else if (fighterId === 'thor') {
+        this.tone(95, 0.45, 'sawtooth', 0.32, d, t, 42);
+        this.noiseBurst(0.4, 0.3, 1600, d, t);
+      } else {
+        this.tone(220, 0.4, 'sawtooth', 0.25, d, t, 880);
+        this.tone(440, 0.45, 'triangle', 0.2, d, t + 0.05, 110);
+      }
     });
   }
 

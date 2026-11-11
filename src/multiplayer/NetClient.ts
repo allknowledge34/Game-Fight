@@ -72,7 +72,7 @@ export class NetClient {
     this.peerConnected = true;
     return {
       code,
-      lobby: body.lobby ?? { p1: 'modi', p2: 'rahul', stage: 'sansad', difficulty: 'normal' },
+      lobby: body.lobby ?? { p1: 'kratos', p2: 'wukong', stage: 'sansad', difficulty: 'normal' },
     };
   }
 

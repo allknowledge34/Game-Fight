@@ -106,7 +106,7 @@ export async function createRoomServer(options?: {
         createdAt: Date.now(),
         hostWs: null,
         guestWs: null,
-        lobby: { p1: 'modi', p2: 'rahul', stage: 'sansad', difficulty: 'normal' },
+        lobby: { p1: 'kratos', p2: 'wukong', stage: 'sansad', difficulty: 'normal' },
       });
       sendJson(res, 201, { code, role: 'host' });
       return;

@@ -65,7 +65,7 @@ describe('Room Server HTTP & WebSocket Integration', () => {
 
     // Host sends lobby selection -> guest receives
     const lobbyWait = nextJsonMessage(guestWs);
-    hostWs.send(JSON.stringify({ t: 'lobby', lobby: { stage: 'jantar', p1: 'amit' } }));
+    hostWs.send(JSON.stringify({ t: 'lobby', lobby: { stage: 'jantar', p1: 'thor' } }));
     const lobbyMsg = await lobbyWait;
     expect(lobbyMsg.t).toBe('lobby');
     expect((lobbyMsg.lobby as { stage: string }).stage).toBe('jantar');

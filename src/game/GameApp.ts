@@ -5,10 +5,12 @@ import {
   recordMatchWinForBapu,
   setLegalAccepted,
 } from '../core/storage';
-import { FIGHTER_ROSTER } from '../characters/roster';
+import { BOSS_ID, FIGHTER_ROSTER } from '../characters/roster';
+import { UI_LABELS_CONFIG } from '../characters/characterConfigs';
 import { AudioEngine } from '../audio/AudioEngine';
 import { InputManager } from '../input/InputManager';
 import { PortraitFactory } from '../rendering/PortraitFactory';
+import { preloadFighterModels } from '../rendering/FighterRig';
 import { ThreeScene } from '../rendering/ThreeScene';
 import { BattleSimulation, emptyInput } from '../simulation/BattleSimulation';
 import { FIXED_DT } from '../physics/FighterController';
@@ -351,16 +353,24 @@ export class GameApp {
 
   private beginLoadingSequence(): void {
     this.setScreen('loading');
-    this.loadFill.style.transform = 'scaleX(0.35)';
-    window.setTimeout(() => {
-      this.loadFill.style.transform = 'scaleX(0.85)';
+    this.loadFill.style.transform = 'scaleX(0.15)';
+    void preloadFighterModels(FIGHTER_ROSTER, (frac) => {
+      this.loadFill.style.transform = `scaleX(${(0.15 + frac * 0.85).toFixed(2)})`;
+    }).then(() => {
+      try {
+        this.portraits.warmFromLoadedModels(this.scene.renderer);
+      } catch (err) {
+        console.warn('3D bust portrait render fallback to 2D canvas:', err);
+      }
       this.syncPreviewSimulation();
-    }, 120);
-    window.setTimeout(() => {
-      this.loadFill.style.transform = 'scaleX(1)';
-      this.setScreen('title');
-      this.audio.setTrack('intro');
-    }, 320);
+      window.setTimeout(() => {
+        if (this.screen === 'loading') {
+          this.loadFill.style.transform = 'scaleX(1)';
+          this.setScreen('title');
+          this.audio.setTrack('intro');
+        }
+      }, 120);
+    });
   }
 
   private openOnlineModal(): void {
@@ -419,8 +429,19 @@ export class GameApp {
     this.lastRoundSeen = 1;
     const modeTag = !online ? 'CPU' : this.net.role === 'guest' ? 'GUEST' : 'P2';
     this.hud.initMatch(this.select.p1, this.select.p2, modeTag);
-    this.hud.say('ROUND 1', 'round', 1100);
+    const introBanner = this.sim.vsBoss ? `FINAL BOSS · ${FIGHTER_ROSTER[BOSS_ID].name}` : 'ROUND 1';
+    this.hud.say(introBanner, 'round', 1100);
     this.audio.setTrack('battle');
+    if (this.sim.vsBoss) {
+      this.audio.playAnnouncer('boss');
+    } else {
+      this.audio.playCharacterLine(this.select.p1, 'intro');
+      window.setTimeout(() => {
+        if (this.screen === 'fight' && this.sim.phase === 'roundCall') {
+          this.audio.playAnnouncer('round1');
+        }
+      }, 950);
+    }
     this.setScreen('fight');
   }
 
@@ -436,6 +457,8 @@ export class GameApp {
       },
       false,
     );
+    this.sim.fighters[0].x = -1.2;
+    this.sim.fighters[1].x = 1.2;
     this.sim.fighters[0].forceState('intro');
     this.sim.fighters[1].forceState('intro');
   }
@@ -502,10 +525,13 @@ export class GameApp {
         if (this.sim.rounds.round !== this.lastRoundSeen) {
           this.lastRoundSeen = this.sim.rounds.round;
           this.hud.say(`ROUND ${this.lastRoundSeen}`, 'round', 900);
+          const annKey = this.lastRoundSeen === 2 ? 'round2' : 'round3';
+          this.audio.playAnnouncer(annKey);
         }
         window.setTimeout(() => {
           if (this.screen === 'fight' && this.sim.phase === 'fight') {
             this.hud.say('FIGHT!', 'fight', 750);
+            this.audio.playAnnouncer('fight');
           }
         }, 120);
       } else if (ev.kind === 'hit') {
@@ -514,8 +540,11 @@ export class GameApp {
         const defId = this.sim.fighters[ev.targetSide ?? 1].profile.id;
         const pos = this.scene.projectToScreen(ev.x ?? 0, ev.y ?? 1.2);
         this.scene.particles.hitSpark(ev.x ?? 0, ev.y ?? 1.2, (ev.damage ?? 0) >= 11, this.sim.fighters[atkSide].facing);
+        if (defId === BOSS_ID) {
+          this.scene.particles.shockwave(ev.x ?? 0, ev.y ?? 1.1, 0, 0x22d3ee, 0.15, 0.95, 0.25);
+        }
         this.scene.cameraCtrl.shake((ev.damage ?? 5) >= 11 ? 0.22 : 0.08, 0.22);
-        this.audio.hit((ev.damage ?? 5) / 10);
+        this.audio.hit((ev.damage ?? 5) / 10, atkId);
         this.hud.spawnPopup(
           ev.combo && ev.combo >= 2 ? `${ev.combo} HIT! -${ev.damage}` : `${ev.text} -${ev.damage}`,
           pos.x,
@@ -535,9 +564,12 @@ export class GameApp {
       } else if (ev.kind === 'superStart' || ev.kind === 'budgetStart') {
         const side = ev.side ?? 0;
         const id = this.sim.fighters[side].profile.id;
-        this.audio.superSting();
+        this.audio.superSting(id);
+        if (ev.kind === 'superStart') {
+          this.audio.playCharacterLine(id, 'super');
+        }
         this.hud.flash('rgba(255, 210, 100, 0.45)', 220);
-        this.hud.showSuperBanner(id, side, ev.kind === 'budgetStart' ? 'NIRMALA BUDGET!' : undefined);
+        this.hud.showSuperBanner(id, side, ev.kind === 'budgetStart' ? 'COUNTER DROP!' : undefined);
         this.hud.triggerNewsReaction(
           id,
           this.sim.fighters[side === 0 ? 1 : 0].profile.id,
@@ -555,6 +587,7 @@ export class GameApp {
         this.hud.spawnPopup('+18 HP!', pos.x, pos.y, '#4ade80');
       } else if (ev.kind === 'ko') {
         this.audio.ko();
+        this.audio.playAnnouncer('ko');
         this.hud.flash('rgba(255,255,255,0.6)', 240);
         this.hud.say(ev.text ?? 'K.O.!', 'ko', 1600);
         if (this.sim.rounds.finished && !this.matchSnapshotUrl) {
@@ -562,8 +595,10 @@ export class GameApp {
         }
       } else if (ev.kind === 'matchEnd') {
         const wSide = ev.side ?? 0;
+        const wId = this.sim.fighters[wSide].profile.id;
         const localSide = this.net.role === 'guest' ? 1 : 0;
         this.audio.winJingle(wSide === localSide);
+        this.audio.playCharacterLine(wId, 'win');
         if (this.sim.options.mode === 'cpu') {
           this.bapuUnlockedThisMatch = recordMatchWinForBapu(wSide === 0, wSide === 0 && this.sim.fighters[1].isBoss);
           this.select.bapuUnlocked = loadBapuProgress().unlocked;
@@ -588,6 +623,7 @@ export class GameApp {
 
     const news = buildNewspaperResult(wId, lId, snap.wins, draw);
     document.getElementById('paper-masthead')!.textContent = news.masthead;
+    document.getElementById('paper-date')!.textContent = news.dateline;
     document.getElementById('paper-headline')!.textContent = news.headline;
     document.getElementById('paper-sub')!.textContent = news.sub;
     document.getElementById('paper-excuse')!.textContent = news.excuse;
@@ -597,16 +633,16 @@ export class GameApp {
     photo.src = this.matchSnapshotUrl || this.scene.captureSnapshotDataUrl() || this.portraits.getFighterPortrait(wId);
 
     const localSide = this.net.role === 'guest' ? 1 : 0;
-    document.getElementById('result-title')!.textContent = draw
-      ? 'DRAW!'
-      : wSide === localSide
-        ? 'YOU WIN!'
-        : `${FIGHTER_ROSTER[wId].name} WINS!`;
+    const stampEl = document.getElementById('result-title')!;
+    const won = wSide === localSide;
+    stampEl.textContent = draw ? 'DRAW!' : won ? 'YOU WIN!' : `${FIGHTER_ROSTER[wId].name} WINS!`;
+    stampEl.classList.toggle('win', won && !draw);
+    stampEl.classList.toggle('lose', !won && !draw);
 
     const statsEl = document.getElementById('bapu-stats')!;
     if (this.bapuUnlockedThisMatch) {
       statsEl.classList.remove('hidden');
-      statsEl.textContent = 'MBAPU UNLOCKED! Available now in Character Select.';
+      statsEl.textContent = UI_LABELS_CONFIG.bossUnlockedNotice;
     } else {
       statsEl.classList.add('hidden');
     }
@@ -648,8 +684,13 @@ export class GameApp {
       }
 
       const snap = this.sim.exportSnapshot();
-      const preview = this.screen !== 'fight' && this.screen !== 'pause';
-      this.scene.syncFighters(snap, this.clock, dt, preview);
+      const camMode =
+        this.screen === 'title'
+          ? 'title'
+          : this.screen === 'fight' || this.screen === 'pause'
+            ? 'fight'
+            : 'select';
+      this.scene.syncFighters(snap, this.clock, dt, camMode);
       if (this.screen === 'fight' || this.screen === 'pause') {
         this.hud.update(snap, this.sim.vsBoss, dt);
       }

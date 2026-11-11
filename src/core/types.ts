@@ -1,15 +1,11 @@
 export type FighterId =
-  | 'modi'
-  | 'rahul'
-  | 'didi'
-  | 'trump'
-  | 'yogi'
-  | 'nitin'
-  | 'mbapu'
-  | 'ravi'
-  | 'lalu'
-  | 'amit'
-  | 'dhruv';
+  | 'kratos'
+  | 'wukong'
+  | 'michael'
+  | 'spiderman'
+  | 'ironman'
+  | 'thor'
+  | 'steve';
 
 export type StageId = 'sansad' | 'jantar' | 'road';
 
@@ -72,17 +68,22 @@ export interface FighterLookSpec {
   skin: number;
   skinShade: number;
   hair: number;
-  hairStyle: 'receding' | 'side-part' | 'bun';
+  hairStyle: 'bald' | 'monkey-crown' | 'slick-short' | 'masked' | 'helmet' | 'long-flowing' | 'blocky';
   beard: number;
-  beardStyle: 'full-white' | 'stubble-grey' | 'none';
+  beardStyle: 'spartan-thick' | 'monkey-sideburns' | 'stubble' | 'none' | 'norse-full' | 'pixel-goatee';
   brows: number;
-  topStyle: 'kurta-jacket' | 'tshirt' | 'sari';
+  topStyle: 'spartan-armor' | 'wukong-armor' | 'pinstripe-suit' | 'web-suit' | 'iron-armor' | 'asgard-armor' | 'voxel-shirt';
   top: number;
   jacket: number;
   pants: number;
   shoes: number;
+  accentMetal: number;
+  emissiveGlow: number;
   glasses: boolean;
+  capeColor?: number;
+  weaponType: 'axe-blades' | 'staff' | 'pistol' | 'webshooters' | 'repulsors' | 'hammer' | 'diamond-sword';
   shoulders: number;
+  chestBuild: number;
   belly: number;
   scale: number;
 }
@@ -92,13 +93,26 @@ export interface FighterProfile {
   name: string;
   fullName: string;
   party: string;
+  titleTag: string;
   accent: string;
+  isBoss?: boolean;
+  modelUrl: string;
+  portraitUrl: string;
+  voiceLines: {
+    intro: string;
+    super: string;
+    win: string;
+    introAudio: string;
+    superAudio: string;
+    winAudio: string;
+  };
   look: FighterLookSpec;
   walkFwd: number;
   walkBack: number;
   jumpV: number;
   jumpVx: number;
   damageMul: number;
+  reachMul: number;
   modelHeight: number;
   danceIntro?: boolean;
   moveNames: Partial<Record<MoveId, string>>;

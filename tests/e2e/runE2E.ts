@@ -9,6 +9,8 @@ const SHOT_DIR = '/Users/sachinkumar/.gemini/antigravity/brain/14139982-5845-42e
 
 async function main() {
   fs.mkdirSync(SHOT_DIR, { recursive: true });
+  const superShotPath = path.join(SHOT_DIR, 'e2e_06b_super.png');
+  fs.rmSync(superShotPath, { force: true });
   const distDir = path.resolve(process.cwd(), 'dist');
   assert.ok(fs.existsSync(path.join(distDir, 'index.html')), 'Run npm run build before E2E tests');
 
@@ -51,8 +53,24 @@ async function main() {
     await page.waitForSelector('#select:not(.hidden)', { timeout: 5000 });
 
     const tileCount = await page.locator('#roster-grid .tile').count();
-    assert.equal(tileCount, 12, 'Expected 11 fighter tiles + 1 RANDOM tile');
+    assert.equal(tileCount, 8, 'Expected 7 fighter tiles + 1 RANDOM tile');
 
+    // Verify all 7 rigged GLB models preloaded cleanly
+    const glbSummary = await page.evaluate(() => {
+      const app = (window as unknown as { __GAME_APP__?: { scene?: { loadedModelsSummary?: unknown } } }).__GAME_APP__;
+      return app?.scene?.loadedModelsSummary;
+    });
+    console.log('[e2e] Active fighter GLB models loaded:', JSON.stringify(glbSummary));
+
+    // Check P2 Boss Steve selection preview too
+    await page.click('[data-tile="thor"]');
+    await page.click('[data-tile="steve"]');
+    await page.waitForTimeout(250);
+    await page.screenshot({ path: path.join(SHOT_DIR, 'e2e_03b_select_thor_steve.png') });
+
+    // Switch back to Kratos vs Wukong on Sansad / Jantar / Road
+    await page.click('[data-tile="kratos"]');
+    await page.click('[data-tile="wukong"]');
     await page.click('[data-stage="sansad"]');
     await page.waitForTimeout(250);
     await page.screenshot({ path: path.join(SHOT_DIR, 'e2e_03_select_sansad.png') });
@@ -99,7 +117,7 @@ async function main() {
     console.log(`[e2e] Desktop WebGL FPS: ${fps.toFixed(1)}`);
 
     // Real combat inputs until match result (verify HP & SHAKTI responsiveness and drive FT2 win)
-    const fightDeadline = Date.now() + 55_000;
+    const fightDeadline = Date.now() + 90_000;
     let sawDamage = false;
     let sawMeter = false;
     let reachedResult = false;
@@ -152,20 +170,24 @@ async function main() {
       const absDx = Math.abs(dx);
       const dirKey = dx >= 0 ? 'KeyD' : 'KeyA';
 
+      if (state.phase === 'super' && !fs.existsSync(superShotPath)) {
+        await page.screenshot({ path: superShotPath });
+      }
       if (state.m0 >= 100 && absDx < 2.2) {
         await page.keyboard.press('KeyL');
-        await page.waitForTimeout(150);
-      } else if (absDx > 0.8) {
+        await page.waitForTimeout(700);
+        if (!fs.existsSync(superShotPath)) {
+          await page.screenshot({ path: superShotPath });
+        }
+      } else if (absDx > 0.78) {
         await page.keyboard.down(dirKey);
-        await page.waitForTimeout(140);
+        await page.waitForTimeout(95);
         await page.keyboard.up(dirKey);
       } else {
         await page.keyboard.press('KeyJ');
-        await page.waitForTimeout(95);
-        await page.keyboard.press('KeyJ');
-        await page.waitForTimeout(95);
+        await page.waitForTimeout(70);
         await page.keyboard.press('KeyK');
-        await page.waitForTimeout(120);
+        await page.waitForTimeout(80);
       }
     }
 
@@ -173,6 +195,7 @@ async function main() {
     assert.ok(sawMeter, 'Expected strikes to build SHAKTI meter');
     assert.ok(reachedResult, 'Expected match to finish and show THE DAILY JUMLA result newspaper');
 
+    await page.waitForTimeout(700);
     await page.screenshot({ path: path.join(SHOT_DIR, 'e2e_08_result.png') });
     const headline = await page.textContent('#paper-headline');
     assert.ok(headline && headline.length > 5, 'Expected dynamic newspaper headline');

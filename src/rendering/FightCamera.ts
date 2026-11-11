@@ -1,20 +1,22 @@
 import * as THREE from 'three';
 import { clamp } from '../core/prng';
 
+export type CameraMode = 'title' | 'select' | 'fight';
+
 export class FightCamera {
   readonly camera: THREE.PerspectiveCamera;
-  private readonly goalPos = new THREE.Vector3(0, 2.0, 7.2);
-  private readonly goalLook = new THREE.Vector3(0, 1.15, 0);
-  private readonly curLook = new THREE.Vector3(0, 1.15, 0);
-  private goalFov = 46;
+  private readonly goalPos = new THREE.Vector3(0, 1.48, 4.4);
+  private readonly goalLook = new THREE.Vector3(0, 1.12, 0);
+  private readonly curLook = new THREE.Vector3(0, 1.12, 0);
+  private goalFov = 42;
   private overrideUntil = 0;
-  private overrideSpeed = 5;
+  private overrideSpeed = 6;
   private shakeAmp = 0;
   private shakeTime = 0;
   private shakeDur = 0.3;
 
   constructor(aspect: number) {
-    this.camera = new THREE.PerspectiveCamera(46, aspect, 0.1, 220);
+    this.camera = new THREE.PerspectiveCamera(42, aspect, 0.05, 400);
     this.camera.position.copy(this.goalPos);
     this.camera.lookAt(this.curLook);
   }
@@ -32,7 +34,7 @@ export class FightCamera {
     }
   }
 
-  setCinema(pos: THREE.Vector3, look: THREE.Vector3, speed = 5, fov = 42, holdSeconds = 0.1): void {
+  setCinema(pos: THREE.Vector3, look: THREE.Vector3, speed = 5.5, fov = 38, holdSeconds = 0.12): void {
     this.goalPos.copy(pos);
     this.goalLook.copy(look);
     this.goalFov = fov;
@@ -40,28 +42,59 @@ export class FightCamera {
     this.overrideUntil = performance.now() * 0.001 + holdSeconds;
   }
 
-  followFighters(x0: number, x1: number, selectMode: boolean): void {
+  followFighters(
+    x0: number,
+    x1: number,
+    modeOrSelect: CameraMode | boolean,
+    y0 = 0,
+    y1 = 0,
+    clock = 0,
+  ): void {
     const now = performance.now() * 0.001;
     if (now < this.overrideUntil) return;
 
+    const mode: CameraMode =
+      typeof modeOrSelect === 'boolean' ? (modeOrSelect ? 'select' : 'fight') : modeOrSelect;
+
+    const aspectComp = Math.max(0, (1.55 - this.camera.aspect) * 1.4);
+
+    if (mode === 'title') {
+      const orbitDist = 4.15 * Math.max(1, 1.48 / Math.max(0.5, this.camera.aspect));
+      const ang = Math.sin(clock * 0.25) * 0.32;
+      this.goalPos.set(Math.sin(ang) * orbitDist, 1.45, Math.cos(ang) * orbitDist);
+      this.goalLook.set(0, 1.12, 0);
+      this.goalFov = 40;
+      this.overrideSpeed = 3.5;
+      return;
+    }
+
+    if (mode === 'select') {
+      const midX = (x0 + x1) * 0.5;
+      const selDist = 3.95 + aspectComp * 0.7;
+      this.goalPos.set(midX, 1.38, selDist);
+      this.goalLook.set(midX, 0.98, 0);
+      this.goalFov = 40;
+      this.overrideSpeed = 5;
+      return;
+    }
+
+    // Active combat tracking matching FightKaro's tighter close-up framing
     const midX = (x0 + x1) * 0.5;
     const sep = Math.abs(x1 - x0);
-    if (selectMode) {
-      this.goalPos.set(midX, 1.75, 5.2);
-      this.goalLook.set(midX, 1.12, 0);
-      this.goalFov = 42;
-      this.overrideSpeed = 4;
-    } else {
-      const distZ = clamp(4.8 + sep * 0.72, 5.2, 9.8);
-      this.goalPos.set(clamp(midX, -3.5, 3.5), 1.85 + (distZ - 5.2) * 0.08, distZ);
-      this.goalLook.set(clamp(midX, -3.5, 3.5), 1.08, 0);
-      this.goalFov = 46;
-      this.overrideSpeed = 6.5;
-    }
+    const maxY = Math.max(y0, y1);
+    const distZ = clamp(3.4 + sep * 0.85, 4.4, 8.5) + aspectComp;
+    this.goalPos.set(
+      clamp(midX, -3.8, 3.8),
+      1.55 + sep * 0.06 + maxY * 0.35,
+      distZ,
+    );
+    this.goalLook.set(clamp(midX, -3.8, 3.8), 1.0 + maxY * 0.28, 0);
+    this.goalFov = 42;
+    this.overrideSpeed = 6.8;
   }
 
   update(dt: number): void {
-    const k = Math.min(1, dt * this.overrideSpeed);
+    const k = 1 - Math.exp(-this.overrideSpeed * dt);
     this.camera.position.lerp(this.goalPos, k);
     this.curLook.lerp(this.goalLook, k);
 

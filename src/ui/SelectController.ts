@@ -1,5 +1,6 @@
 import type { Difficulty, FighterId, StageId } from '../core/types';
-import { FIGHTER_ROSTER, ROSTER_ORDER } from '../characters/roster';
+import { BOSS_ID, FIGHTER_ROSTER, ROSTER_ORDER } from '../characters/roster';
+import { UI_LABELS_CONFIG } from '../characters/characterConfigs';
 import type { PortraitFactory } from '../rendering/PortraitFactory';
 
 export interface SelectCallbacks {
@@ -10,8 +11,8 @@ export interface SelectCallbacks {
 }
 
 export class SelectController {
-  p1: FighterId = 'modi';
-  p2: FighterId = 'rahul';
+  p1: FighterId = 'kratos';
+  p2: FighterId = 'wukong';
   stage: StageId = 'sansad';
   difficulty: Difficulty = 'normal';
   bapuUnlocked = false;
@@ -44,19 +45,20 @@ export class SelectController {
     this.gridEl.replaceChildren();
     for (const id of ROSTER_ORDER) {
       const f = FIGHTER_ROSTER[id];
+      const isBossTile = id === BOSS_ID;
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = `tile${id === 'mbapu' ? ' boss' : ''}`;
+      btn.className = `tile${isBossTile ? ' boss' : ''}`;
       btn.dataset.tile = id;
       btn.style.setProperty('--accent', f.accent);
       btn.innerHTML = `
-        ${id === 'mbapu' ? '<span class="boss-tag">BOSS</span>' : ''}
+        ${isBossTile ? `<span class="boss-tag">${UI_LABELS_CONFIG.bossBadge}</span>` : ''}
         <img alt="${f.fullName}" />
         <span class="tile-name">${f.name}</span>
         <i class="cur p1">1P</i>
         <i class="cur p2">CPU</i>
       `;
-      (btn.querySelector('img') as HTMLImageElement).src = this.portraits.getFighterPortrait(id);
+      this.portraits.bindPortraitImage(btn.querySelector('img') as HTMLImageElement, id);
       btn.addEventListener('click', () => this.handleTileClick(id));
       this.tiles.set(id, btn);
       this.gridEl.appendChild(btn);
@@ -66,7 +68,8 @@ export class SelectController {
     randBtn.type = 'button';
     randBtn.className = 'tile random';
     randBtn.dataset.tile = 'random';
-    randBtn.innerHTML = `<span class="tile-q">?</span><span class="tile-name">RANDOM</span>`;
+    randBtn.style.setProperty('--accent', '#ffe3a0');
+    randBtn.innerHTML = `<span class="tile-q">?</span><span class="tile-name">${UI_LABELS_CONFIG.randomLabel}</span>`;
     randBtn.addEventListener('click', () => this.pickRandom());
     this.gridEl.appendChild(randBtn);
   }
@@ -100,8 +103,8 @@ export class SelectController {
       this.p2 = id;
     } else {
       if (this.pickTarget === 1) {
-        if (id === 'mbapu' && !this.bapuUnlocked) {
-          this.p2 = 'mbapu'; // Allow picking Mbapu as Boss opponent even before unlock
+        if (id === BOSS_ID && !this.bapuUnlocked) {
+          this.p2 = BOSS_ID; // Allow picking Boss as opponent even before unlock
         } else {
           this.p1 = id;
           this.pickTarget = 2;
@@ -116,7 +119,7 @@ export class SelectController {
   }
 
   pickRandom(): void {
-    const pool = ROSTER_ORDER.filter((id) => id !== 'mbapu' || this.bapuUnlocked);
+    const pool = ROSTER_ORDER.filter((id) => id !== BOSS_ID || this.bapuUnlocked);
     if (this.onlineRole !== 'guest') {
       this.p1 = pool[Math.floor(Math.random() * pool.length)];
     }
@@ -130,7 +133,7 @@ export class SelectController {
 
   stepP1(delta: number): void {
     if (this.onlineRole === 'guest') return;
-    const pool = ROSTER_ORDER.filter((id) => id !== 'mbapu' || this.bapuUnlocked);
+    const pool = ROSTER_ORDER.filter((id) => id !== BOSS_ID || this.bapuUnlocked);
     const idx = Math.max(0, pool.indexOf(this.p1));
     this.p1 = pool[(idx + delta + pool.length) % pool.length];
     this.refresh();
@@ -174,13 +177,15 @@ export class SelectController {
     for (const [id, btn] of this.tiles) {
       btn.classList.toggle('p1', this.p1 === id);
       btn.classList.toggle('p2', this.p2 === id);
-      btn.classList.toggle('locked', id === 'mbapu' && !this.bapuUnlocked);
+      btn.classList.toggle('locked', id === BOSS_ID && !this.bapuUnlocked);
       const p2Tag = btn.querySelector('.cur.p2') as HTMLElement;
-      p2Tag.textContent = this.onlineRole ? 'P2' : id === 'mbapu' ? 'BOSS' : 'CPU';
+      p2Tag.textContent = this.onlineRole ? 'P2' : id === BOSS_ID ? UI_LABELS_CONFIG.bossBadge : 'CPU';
     }
 
     const f1 = FIGHTER_ROSTER[this.p1];
     const f2 = FIGHTER_ROSTER[this.p2];
+    this.p1Card.style.setProperty('--accent', f1.accent);
+    this.p2Card.style.setProperty('--accent', f2.accent);
     (this.p1Card.querySelector('.card-role') as HTMLElement).textContent = this.onlineRole === 'guest' ? 'P1 · HOST' : '1P · YOU';
     (this.p1Card.querySelector('.card-name') as HTMLElement).textContent = f1.name;
     (this.p1Card.querySelector('.card-party') as HTMLElement).textContent = f1.party;
@@ -188,11 +193,23 @@ export class SelectController {
     (this.p1Card.querySelector('.card-desc') as HTMLElement).textContent = f1.superDesc;
 
     (this.p2Card.querySelector('.card-role') as HTMLElement).textContent =
-      this.onlineRole === 'guest' ? 'P2 · YOU' : this.onlineRole === 'host' ? 'P2 · FRIEND' : this.p2 === 'mbapu' ? 'FINAL BOSS' : 'CPU';
+      this.onlineRole === 'guest'
+        ? 'P2 · YOU'
+        : this.onlineRole === 'host'
+          ? 'P2 · FRIEND'
+          : this.p2 === BOSS_ID
+            ? 'FINAL BOSS'
+            : 'CPU';
     (this.p2Card.querySelector('.card-name') as HTMLElement).textContent = f2.name;
     (this.p2Card.querySelector('.card-party') as HTMLElement).textContent = f2.party;
     (this.p2Card.querySelector('.card-super') as HTMLElement).textContent = `SUPER · ${f2.superName}`;
     (this.p2Card.querySelector('.card-desc') as HTMLElement).textContent = f2.superDesc;
+
+    const prompt = document.getElementById('pick-prompt');
+    if (prompt) {
+      prompt.textContent = this.pickTarget === 2 ? UI_LABELS_CONFIG.pickPromptP2 : UI_LABELS_CONFIG.pickPromptP1;
+      prompt.classList.toggle('p2', this.pickTarget === 2);
+    }
 
     for (const btn of this.stageBtns) {
       btn.classList.toggle('active', btn.dataset.stage === this.stage);

@@ -21,7 +21,7 @@ function makeMemoryStorage(): Storage {
   };
 }
 
-describe('RoundManager, Boss Mbapu, Nirmala Budget & progression', () => {
+describe('RoundManager, Boss Steve, Counter Drop Assist & progression', () => {
   it('tracks FT2 wins, handles draws and timeover percentages', () => {
     const rm = new RoundManager();
     const d = rm.resolveRound(50, 100, 50, 100, true);
@@ -42,9 +42,9 @@ describe('RoundManager, Boss Mbapu, Nirmala Budget & progression', () => {
     expect(rm.finished).toBe(true);
   });
 
-  it('applies Boss Mbapu 2x HP, passive regen, and Nirmala Budget Assist 25% slam', () => {
+  it('applies Boss Steve 2x HP, passive regen, and Counter Drop Assist 25% slam', () => {
     const sim = new BattleSimulation(
-      { p1: 'modi', p2: 'mbapu', stage: 'sansad', difficulty: 'normal', mode: 'cpu' },
+      { p1: 'kratos', p2: 'steve', stage: 'sansad', difficulty: 'normal', mode: 'cpu' },
       true,
     );
 
